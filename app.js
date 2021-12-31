@@ -36,7 +36,7 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 const userSchema = new mongoose.Schema({
   email: String,
   password: String,
-  // googleId: String,
+  facebookId: String,
   secret: String
 });
 
@@ -81,12 +81,10 @@ passport.use(new FacebookStrategy({
   },
   function(accessToken, refreshToken, profile, cb) {
     User.findOrCreate({
-      email: profile.email
-      // facebookId: profile.id
+      facebookId: profile.id
     }, function(err, user) {
       return cb(err, user);
     });
-    console.log(profile.email);
   }
 ));
 
