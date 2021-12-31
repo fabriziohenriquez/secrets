@@ -36,12 +36,7 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 const userSchema = new mongoose.Schema({
   email: String,
   password: String,
-  // Added 'googleId' to solve problem of double account creation on db and not being able to login
-  // using google if not registered on the db, but seems to be redundant due to updates
-  // to passport or node or whatever, as removing the google ID field from mongo db
-  // seems to have no impact on functionality of authentication with Google, having this
-  // field enables db to save the user's google id (unnecessary), taking up storage
-  // googleId: String
+  // googleId: String,
   secret: String
 });
 
@@ -70,7 +65,8 @@ passport.use(new GoogleStrategy({
   },
   function(request, accessToken, refreshToken, profile, done) {
     User.findOrCreate({
-      googleId: profile.id
+      email: profile.emails[0].value
+      // googleId: profile.id
     }, function(err, user) {
       return done(err, user);
     });
@@ -85,10 +81,12 @@ passport.use(new FacebookStrategy({
   },
   function(accessToken, refreshToken, profile, cb) {
     User.findOrCreate({
-      facebookId: profile.id
+      email: profile.email
+      // facebookId: profile.id
     }, function(err, user) {
       return cb(err, user);
     });
+    console.log(profile.email);
   }
 ));
 
@@ -110,7 +108,7 @@ app.get('/auth/google/secrets',
 
 // Facebook authentication routing
 app.get('/auth/facebook',
-  passport.authenticate('facebook'));
+  passport.authenticate('facebook', {scope: ["email"]}));
 
 app.get('/auth/facebook/secrets',
   passport.authenticate('facebook', {
